@@ -1,0 +1,38 @@
+# SmartMaintaince HD: Node.js microservices, MQTT and MongoDB, all in containers.
+#   docker compose up -d --build                    start everything (1 copy of each service)
+#   docker compose up -d --scale anomaly=4          run 4 copies of the anomaly service
+#   BATCH_SIZE=1 USE_INDEX=false docker compose up -d --force-recreate   original behaviour
+#   docker compose down                             stop everything
+x-service: &service
+  build: .
+  restart: on-failure
+  depends_on: [mosquitto, mongo]
+  environment: &env
+    MQTT_URL: mqtt://mosquitto:1883
+    MONGO_URL: mongodb://mongo:27017
+    STATS_PORT: "3000"
+    BATCH_SIZE: ${BATCH_SIZE:-6}
+    MAX_WAIT_MS: ${MAX_WAIT_MS:-5000}
+    USE_INDEX: ${USE_INDEX:-true}
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    ports: ["1883:1883"]
+  mongo:
+    image: mongo:7
+    ports: ["27017:27017"]
+  gateway:
+    <<: *service
+    command: ["node", "services/gateway/index.js"]
+  anomaly:
+    <<: *service
+    command: ["node", "services/anomaly/index.js"]
+  historian:
+    <<: *service
+    command: ["node", "services/historian/index.js"]
+  alerting:
+    <<: *service
+    command: ["node", "services/alerting/index.js"]

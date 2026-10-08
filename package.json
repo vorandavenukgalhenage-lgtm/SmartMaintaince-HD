@@ -1,0 +1,13 @@
+{
+  "name": "smartmaintaince-hd",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SmartMaintaince HD scalability project: Node.js microservices, MQTT, MongoDB, Docker",
+  "scripts": {
+    "test": "node test/run.js"
+  },
+  "dependencies": {
+    "mongodb": "^6.8.0",
+    "mqtt": "^5.10.0"
+  }
+}
